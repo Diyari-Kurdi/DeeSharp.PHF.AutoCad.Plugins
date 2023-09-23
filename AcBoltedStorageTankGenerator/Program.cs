@@ -143,8 +143,11 @@ namespace AcBoltedStorageTankGenerator
             Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2440, insertionPoint.Z);
             BuildInnerView(doc, storageTank, InnerInsertionPoint);
 
-            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + 3660, insertionPoint.Y - 3660, insertionPoint.Z);
+            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + 3660, insertionPoint.Y - 4880, insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
+
+            Point3d ThreeDFrontInsertionPoint = new Point3d(ThreeDInsertionPoint.X + 1620.4012, insertionPoint.Y - 4880, insertionPoint.Z);
+            Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B", true);
         }
 
 
@@ -278,6 +281,7 @@ namespace AcBoltedStorageTankGenerator
                         }
                     });
                     */
+
         private void BuildSideViews(Document doc, StorageTank storageTank, Point3d insertionPoint, string view, bool isFront = false)
         {
             string blockName = "FlatBlock";
@@ -417,6 +421,8 @@ namespace AcBoltedStorageTankGenerator
         private void Build3DView(Document doc, StorageTank storageTank, Point3d insertionPoint, string view, bool isFront)
         {
             string blockName = "LeftBlock";
+            if (isFront)
+                blockName = "FrontBlock";
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
                 // Open the current space (ModelSpace or PaperSpace) for write
@@ -440,7 +446,7 @@ namespace AcBoltedStorageTankGenerator
                 }
 
                 // Loop to insert multiple instances of the block on top of each other
-                for (int rowIndex = 0; rowIndex < storageTank.LeftAndRight.Count; rowIndex++)
+                for (int rowIndex = 0; rowIndex < rowsNum; rowIndex++)
                 {
                     int rowCount = 0;
                     var panelsCount = rows[rowIndex].Panels.Count;
@@ -454,7 +460,12 @@ namespace AcBoltedStorageTankGenerator
                             if (rowIndex == 0)
                                 currentInsertionPoint = new Point3d(currentInsertionPoint.X, currentInsertionPoint.Y + 285.0512, currentInsertionPoint.Z);
                             if (rowCount == 0)
-                                currentInsertionPoint = new Point3d(currentInsertionPoint.X + 411.3601, currentInsertionPoint.Y + 467.3952, currentInsertionPoint.Z);
+                            {
+                                double num = 467.39522;
+                                if (isFront)
+                                    num = -467.39522;
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X + 411.3601, currentInsertionPoint.Y + num, currentInsertionPoint.Z);
+                            }
                             BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
                             // Add the block reference to the current space
                             currentSpace.AppendEntity(blockRef);
@@ -501,7 +512,7 @@ namespace AcBoltedStorageTankGenerator
 
                 DBText text = new DBText
                 {
-                    Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
+                    Position = new Point3d(insertionPoint.X+1220, insertionPoint.Y - 610, insertionPoint.Z),
                     Height = 180,
                     TextString = view
                 };
