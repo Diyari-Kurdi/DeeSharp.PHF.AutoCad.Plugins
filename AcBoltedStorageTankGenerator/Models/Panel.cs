@@ -2,7 +2,7 @@
 {
     public class Panel
     {
-        public double Height { get; set; }
-        public double Width { get; set; }
+        public double Height { get; set; } = 1220;
+        public double Width { get; set; } = 1220;
     }
 }

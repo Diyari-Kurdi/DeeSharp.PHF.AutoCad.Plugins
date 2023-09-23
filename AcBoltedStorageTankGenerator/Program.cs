@@ -55,50 +55,6 @@ namespace AcBoltedStorageTankGenerator
             sourceDb.Dispose();
         }
 
-
-        #region
-        /*
-        doc.Editor.WriteMessage($"Generating Left/Right side.\n");
-        PromptDoubleOptions panelsWidth = new PromptDoubleOptions("\nEnter the panel Width:");
-        PromptDoubleOptions panelsHeight = new PromptDoubleOptions("\nEnter the panel Height:");
-        PromptIntegerOptions numberOfColumns = new PromptIntegerOptions("\nEnter the number of Columns:");
-        PromptIntegerOptions numberOfRows = new PromptIntegerOptions("\nEnter the number of Rows:");
-        PromptStringOptions userInput = new PromptStringOptions("\nDo you want to continue? [Y]:");
-
-        panelsWidth.DefaultValue = 1.22;
-        numberOfColumns.DefaultValue = 1;
-        numberOfRows.DefaultValue = 1;
-        panelsHeight.DefaultValue = 1.22;
-        userInput.DefaultValue = string.Empty;
-
-        while (true)
-        {
-            PromptResult r = editor.GetString(userInput);
-            if (r.StringResult != string.Empty || r.StringResult.ToUpper() == "Y")
-                break;
-
-            PromptDoubleResult panelHeight = editor.GetDouble(panelsHeight);
-            PromptDoubleResult panelWidth = editor.GetDouble(panelsWidth);
-            PromptIntegerResult columns = editor.GetInteger(numberOfColumns);
-            PromptIntegerResult rows = editor.GetInteger(numberOfRows);
-
-            if (columns.Status != PromptStatus.OK || rows.Status != PromptStatus.OK)
-                return;
-            List<Panel> panels = new List<Panel>();
-            for (int column = 0; column < columns.Value; column++)
-            {
-                panels.Add(new Panel() { Height = panelHeight.Value, Width = panelWidth.Value });
-            }
-            for (int i = 0; i < rows.Value; i++)
-            {
-                var row = new RowModel() { Panels = panels };
-                storageTank.LeftAndRight.Add(row);
-            }
-        }
-        */
-        #endregion
-
-
         [CommandMethod("STGenerator")]
         public void StorageTankGeneratorCommand()
         {
@@ -108,87 +64,221 @@ namespace AcBoltedStorageTankGenerator
             PromptPointResult ppr = editor.GetPoint("\nDesired insertion point: ");
             // Specify the insertion point for the block
 
-            if (ppr.Status == PromptStatus.OK)
+            if (ppr.Status != PromptStatus.OK)
+                return;
+            StorageTank storageTank = new StorageTank();//GetUserInput(doc, editor);
+
+            storageTank.LeftAndRight.Add(new RowModel()
             {
-                StorageTank storageTank = new StorageTank();
-                storageTank.LeftAndRight.Add(new RowModel()
-                {
-                    Panels = new List<Panel>()
-                    {
-                        new Panel()
+                Panels = new List<Panel>()
                         {
-                            Height = 1.22,
-                            Width = 1.22,
-                        },
-                        new Panel()
-                        {
-                            Height = 1.22,
-                            Width = 0.61,
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            },
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            }
                         }
-                    }
-                });
-                storageTank.LeftAndRight.Add(new RowModel()
-                {
-                    Panels = new List<Panel>()
-                    {
-                        new Panel()
+            });
+            storageTank.LeftAndRight.Add(new RowModel()
+            {
+                Panels = new List<Panel>()
                         {
-                            Height = 1.22,
-                            Width = 1.22,
-                        },
-                        new Panel()
-                        {
-                            Height = 1.22,
-                            Width = 0.61,
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            },
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            }
                         }
-                    }
-                });
+            });
 
 
-                storageTank.FrontAndBack.Add(new RowModel()
-                {
-                    Panels = new List<Panel>()
-                    {
-                        new Panel()
+            storageTank.FrontAndBack.Add(new RowModel()
+            {
+                Panels = new List<Panel>()
                         {
-                            Height = 1.22,
-                            Width = 1.22,
-                        },
-                        new Panel()
-                        {
-                            Height = 1.22,
-                            Width = 0.61,
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            },
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            }
                         }
-                    }
-                });
-                storageTank.FrontAndBack.Add(new RowModel()
-                {
-                    Panels = new List<Panel>()
-                    {
-                        new Panel()
+            });
+            storageTank.FrontAndBack.Add(new RowModel()
+            {
+                Panels = new List<Panel>()
                         {
-                            Height = 1.22,
-                            Width = 1.22,
-                        },
-                        new Panel()
-                        {
-                            Height = 1.22,
-                            Width = 0.61,
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            },
+                            new Panel()
+                            {
+                                Height = 1220,
+                                Width = 1220,
+                            }
                         }
-                    }
-                });
+            });
 
+            Point3d insertionPoint = ppr.Value;
 
-                Point3d insertionPoint = ppr.Value;
+            BuildSideViews(doc, storageTank, insertionPoint, "A - View");
+            Point3d FrontInsertionPoint = new Point3d(insertionPoint.X + (storageTank.Length * 2), insertionPoint.Y, insertionPoint.Z);
+            BuildSideViews(doc, storageTank, FrontInsertionPoint, "B - View", true);
+            Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2440, insertionPoint.Z);
+            BuildInnerView(doc, storageTank, InnerInsertionPoint);
 
-                BuildSideViews(doc, storageTank, insertionPoint, "A - View");
-                Point3d FrontInsertionPoint = new Point3d(insertionPoint.X + (storageTank.Length * 2), insertionPoint.Y, insertionPoint.Z);
-                BuildSideViews(doc, storageTank, FrontInsertionPoint, "B - View");
-                Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2.44, insertionPoint.Z);
-                BuildInnerView(doc, storageTank, InnerInsertionPoint);
-            }
+            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + 3660, insertionPoint.Y - 3660, insertionPoint.Z);
+            Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
         }
-        private void BuildSideViews(Document doc, StorageTank storageTank, Point3d insertionPoint, string view)
+
+
+        private StorageTank GetUserInput(Document doc, Editor editor)
+        {
+            StorageTank storageTank = new StorageTank();
+            PromptDoubleOptions panelsWidth = new PromptDoubleOptions("\nEnter the panel Width:");
+            PromptDoubleOptions panelsHeight = new PromptDoubleOptions("\nEnter the panel Height:");
+            PromptIntegerOptions numberOfLeftColumns = new PromptIntegerOptions("\nEnter the number of Columns (Length):");
+            PromptIntegerOptions numberOfFrontColumns = new PromptIntegerOptions("\nEnter the number of Columns (Width):");
+            PromptIntegerOptions numberOfRows = new PromptIntegerOptions("\nEnter the number of Rows:");
+            PromptStringOptions userInput = new PromptStringOptions("\nDo you want to continue? [Y]:");
+            panelsWidth.DefaultValue = 1220;
+            numberOfLeftColumns.DefaultValue = 1;
+            numberOfFrontColumns.DefaultValue = 1;
+            numberOfRows.DefaultValue = 1;
+            panelsHeight.DefaultValue = 1220;
+            userInput.DefaultValue = string.Empty;
+
+            PromptIntegerResult leftColumns = editor.GetInteger(numberOfLeftColumns);
+            PromptIntegerResult frontColumns = editor.GetInteger(numberOfFrontColumns);
+
+            PromptIntegerResult rows = editor.GetInteger(numberOfRows);
+
+            for (int i = 0; i < rows.Value; i++)
+            {
+                RowModel row = new RowModel();
+                for (int column = 0; column < leftColumns.Value; column++)
+                {
+                    row.Panels.Add(new Panel());
+                }
+                storageTank.LeftAndRight.Add(row);
+            }
+            for (int i = 0; i < rows.Value; i++)
+            {
+                RowModel row = new RowModel();
+                for (int column = 0; column < frontColumns.Value; column++)
+                {
+                    row.Panels.Add(new Panel());
+                }
+                storageTank.FrontAndBack.Add(row);
+            }
+
+            //for (int sideIndex = 0; sideIndex < 2; sideIndex++)
+            //{
+            //    if (sideIndex == 0)
+            //        doc.Editor.WriteMessage($"Generating Left/Right side.\n");
+            //    else
+            //        doc.Editor.WriteMessage($"Generating Front/Back side.\n");
+
+            //    while (true)
+            //    {
+            //        PromptResult r = editor.GetString(userInput);
+            //        if (r.StringResult != string.Empty || r.StringResult.ToUpper() == "Y")
+            //            break;
+
+            //        PromptDoubleResult panelHeight = editor.GetDouble(panelsHeight);
+            //        PromptDoubleResult panelWidth = editor.GetDouble(panelsWidth);
+
+            //    }
+            //}
+
+            return storageTank;
+        }
+
+        /*
+                    storageTank.LeftAndRight.Add(new RowModel()
+                    {
+                        Panels = new List<Panel>()
+                        {
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 1.22,
+                            },
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 0.610,
+                            }
+                        }
+                    });
+                    storageTank.LeftAndRight.Add(new RowModel()
+                    {
+                        Panels = new List<Panel>()
+                        {
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 1.22,
+                            },
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 0.610,
+                            }
+                        }
+                    });
+
+
+                    storageTank.FrontAndBack.Add(new RowModel()
+                    {
+                        Panels = new List<Panel>()
+                        {
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 1.22,
+                            },
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 0.610,
+                            }
+                        }
+                    });
+                    storageTank.FrontAndBack.Add(new RowModel()
+                    {
+                        Panels = new List<Panel>()
+                        {
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 1.22,
+                            },
+                            new Panel()
+                            {
+                                Height = 1.22,
+                                Width = 0.610,
+                            }
+                        }
+                    });
+                    */
+        private void BuildSideViews(Document doc, StorageTank storageTank, Point3d insertionPoint, string view, bool isFront = false)
         {
             string blockName = "FlatBlock";
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
@@ -199,82 +289,91 @@ namespace AcBoltedStorageTankGenerator
 
                 // Check if the block definition exists in the drawing
                 BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
-                if (bt.Has(blockName))
+                int rowsNum = 0;
+                List<RowModel> rows = new List<RowModel>();
+
+                if (isFront)
                 {
-                    // Loop to insert multiple instances of the block on top of each other
-                    for (int rowIndex = 0; rowIndex < storageTank.LeftAndRight.Count; rowIndex++)
-                    {
-                        int rowCount = 0;
-                        var panelsCount = storageTank.LeftAndRight[rowIndex].Panels.Count;
-                        foreach (var panel in storageTank.LeftAndRight[rowIndex].Panels)
-                        {
-                            // Create a new block reference
-                            if (panel.Height == 1.22 && panel.Width == 1.22)
-                            {
-                                Point3d currentInsertionPoint = new Point3d(
-                               insertionPoint.X + (rowCount * panel.Width), insertionPoint.Y + (rowIndex * panel.Height), insertionPoint.Z);
-
-                                BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
-                                // Add the block reference to the current space
-                                currentSpace.AppendEntity(blockRef);
-                                tr.AddNewlyCreatedDBObject(blockRef, true);
-                            }
-                            else
-                            {
-                                Point3d currentInsertionPoint = new Point3d(
-                                    insertionPoint.X, insertionPoint.Y + ((rowIndex + 1) * panel.Height), insertionPoint.Z);
-                                // Create a rectangle with panel.Height and panel.Width next to the added object
-                                Point3d corner1 = currentInsertionPoint;
-                                Point3d corner2;
-
-
-                                if (panel.Width == 1.22)
-                                {
-                                    corner2 = new Point3d(
-                                        currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y + (panel.Height * rowIndex), corner1.Z);
-                                }
-                                else
-                                {
-                                    corner2 = new Point3d(
-                                        currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y - (panel.Height * rowIndex), corner1.Z);
-                                }
-
-                                // Create a rectangle using a Polyline
-                                using (Polyline rectangle = new Polyline())
-                                {
-                                    rectangle.AddVertexAt(0, new Point2d(corner1.X, corner1.Y), 0, 0, 0);
-                                    rectangle.AddVertexAt(1, new Point2d(corner2.X, corner1.Y), 0, 0, 0);
-                                    rectangle.AddVertexAt(2, new Point2d(corner2.X, corner1.Y - panel.Height), 0, 0, 0);
-                                    rectangle.AddVertexAt(3, new Point2d(corner1.X, corner1.Y - panel.Height), 0, 0, 0);
-                                    rectangle.Closed = true;
-
-                                    // Add the rectangle to the current space
-                                    currentSpace.AppendEntity(rectangle);
-                                    tr.AddNewlyCreatedDBObject(rectangle, true);
-                                }
-                            }
-                            rowCount++;
-                        }
-                    }
-
-                    DBText text = new DBText();
-                    text.Position = new Point3d(insertionPoint.X, insertionPoint.Y - 0.61, insertionPoint.Z);
-                    text.Height = 0.2;
-                    text.TextString = view;
-                    currentSpace.AppendEntity(text);
-                    tr.AddNewlyCreatedDBObject(text, true);
-
-                    // Commit the transaction to save the changes
-                    tr.Commit();
+                    rowsNum = storageTank.FrontAndBack.Count;
+                    rows = storageTank.FrontAndBack;
                 }
                 else
                 {
-                    doc.Editor.WriteMessage($"Block '{blockName}' does not exist in the drawing.");
+                    rowsNum = storageTank.LeftAndRight.Count;
+                    rows = storageTank.LeftAndRight;
                 }
+
+                // Loop to insert multiple instances of the block on top of each other
+                for (int rowIndex = 0; rowIndex < storageTank.LeftAndRight.Count; rowIndex++)
+                {
+                    int rowCount = 0;
+                    var panelsCount = rows[rowIndex].Panels.Count;
+                    foreach (var panel in rows[rowIndex].Panels)
+                    {
+                        // Create a new block reference
+                        if (panel.Height == 1220 && panel.Width == 1220)
+                        {
+                            Point3d currentInsertionPoint = new Point3d(
+                                insertionPoint.X + (rowCount * panel.Width), insertionPoint.Y + (rowIndex * panel.Height), insertionPoint.Z);
+
+                            BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+                            // Add the block reference to the current space
+                            currentSpace.AppendEntity(blockRef);
+                            tr.AddNewlyCreatedDBObject(blockRef, true);
+                        }
+                        else
+                        {
+                            Point3d currentInsertionPoint = new Point3d(
+                                insertionPoint.X, insertionPoint.Y + ((rowIndex + 1) * panel.Height), insertionPoint.Z);
+                            // Create a rectangle with panel.Height and panel.Width next to the added object
+                            Point3d corner1 = currentInsertionPoint;
+                            Point3d corner2;
+
+
+                            if (panel.Width == 12200)
+                            {
+                                corner2 = new Point3d(
+                                    currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y + (panel.Height * rowIndex), corner1.Z);
+                            }
+                            else
+                            {
+                                corner2 = new Point3d(
+                                    currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y - (panel.Height * rowIndex), corner1.Z);
+                            }
+
+                            // Create a rectangle using a Polyline
+                            using (Polyline rectangle = new Polyline())
+                            {
+                                rectangle.AddVertexAt(0, new Point2d(corner1.X, corner1.Y), 0, 0, 0);
+                                rectangle.AddVertexAt(1, new Point2d(corner2.X, corner1.Y), 0, 0, 0);
+                                rectangle.AddVertexAt(2, new Point2d(corner2.X, corner1.Y - panel.Height), 0, 0, 0);
+                                rectangle.AddVertexAt(3, new Point2d(corner1.X, corner1.Y - panel.Height), 0, 0, 0);
+                                rectangle.Closed = true;
+
+                                // Add the rectangle to the current space
+                                currentSpace.AppendEntity(rectangle);
+                                tr.AddNewlyCreatedDBObject(rectangle, true);
+                            }
+                        }
+                        rowCount++;
+                    }
+                }
+
+
+                DBText text = new DBText
+                {
+                    Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
+                    Height = 180,
+                    TextString = view
+                };
+                currentSpace.AppendEntity(text);
+                tr.AddNewlyCreatedDBObject(text, true);
+
+                // Commit the transaction to save the changes
+                tr.Commit();
 
             }
         }
-
 
         private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint)
         {
@@ -301,8 +400,8 @@ namespace AcBoltedStorageTankGenerator
 
                     DBText text = new DBText
                     {
-                        Position = new Point3d(insertionPoint.X, rectangle.GetPoint2dAt(3).Y - 0.61, insertionPoint.Z),
-                        Height = 0.2,
+                        Position = new Point3d(insertionPoint.X, rectangle.GetPoint2dAt(3).Y - 610, insertionPoint.Z),
+                        Height = 180,
                         TextString = "C - View"
                     };
 
@@ -315,11 +414,110 @@ namespace AcBoltedStorageTankGenerator
             }
         }
 
+        private void Build3DView(Document doc, StorageTank storageTank, Point3d insertionPoint, string view, bool isFront)
+        {
+            string blockName = "LeftBlock";
+            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            {
+                // Open the current space (ModelSpace or PaperSpace) for write
+                BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
+                    doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+
+                // Check if the block definition exists in the drawing
+                BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+                int rowsNum = 0;
+                List<RowModel> rows = new List<RowModel>();
+
+                if (isFront)
+                {
+                    rowsNum = storageTank.FrontAndBack.Count;
+                    rows = storageTank.FrontAndBack;
+                }
+                else
+                {
+                    rowsNum = storageTank.LeftAndRight.Count;
+                    rows = storageTank.LeftAndRight;
+                }
+
+                // Loop to insert multiple instances of the block on top of each other
+                for (int rowIndex = 0; rowIndex < storageTank.LeftAndRight.Count; rowIndex++)
+                {
+                    int rowCount = 0;
+                    var panelsCount = rows[rowIndex].Panels.Count;
+                    foreach (var panel in rows[rowIndex].Panels)
+                    {
+                        // Create a new block reference
+                        if (panel.Height == 1220 && panel.Width == 1220)
+                        {
+                            Point3d currentInsertionPoint = new Point3d(
+                                insertionPoint.X + (rowCount * panel.Width), insertionPoint.Y + (rowIndex * panel.Height), insertionPoint.Z);
+                            if (rowIndex == 0)
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, currentInsertionPoint.Y + 285.0512, currentInsertionPoint.Z);
+                            if (rowCount == 0)
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X + 411.3601, currentInsertionPoint.Y + 467.3952, currentInsertionPoint.Z);
+                            BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+                            // Add the block reference to the current space
+                            currentSpace.AppendEntity(blockRef);
+                            tr.AddNewlyCreatedDBObject(blockRef, true);
+                        }
+                        else
+                        {
+                            Point3d currentInsertionPoint = new Point3d(
+                                insertionPoint.X, insertionPoint.Y + ((rowIndex + 1) * panel.Height), insertionPoint.Z);
+                            // Create a rectangle with panel.Height and panel.Width next to the added object
+                            Point3d corner1 = currentInsertionPoint;
+                            Point3d corner2;
+
+
+                            if (panel.Width == 1220)
+                            {
+                                corner2 = new Point3d(
+                                    currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y + (panel.Height * rowIndex), corner1.Z);
+                            }
+                            else
+                            {
+                                corner2 = new Point3d(
+                                    currentInsertionPoint.X - panel.Width, currentInsertionPoint.Y - (panel.Height * rowIndex), corner1.Z);
+                            }
+
+                            // Create a rectangle using a Polyline
+                            using (Polyline rectangle = new Polyline())
+                            {
+                                rectangle.AddVertexAt(0, new Point2d(corner1.X, corner1.Y), 0, 0, 0);
+                                rectangle.AddVertexAt(1, new Point2d(corner2.X, corner1.Y), 0, 0, 0);
+                                rectangle.AddVertexAt(2, new Point2d(corner2.X, corner1.Y - panel.Height), 0, 0, 0);
+                                rectangle.AddVertexAt(3, new Point2d(corner1.X, corner1.Y - panel.Height), 0, 0, 0);
+                                rectangle.Closed = true;
+
+                                // Add the rectangle to the current space
+                                currentSpace.AppendEntity(rectangle);
+                                tr.AddNewlyCreatedDBObject(rectangle, true);
+                            }
+                        }
+                        rowCount++;
+                    }
+                }
+
+
+                DBText text = new DBText
+                {
+                    Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
+                    Height = 180,
+                    TextString = view
+                };
+                currentSpace.AppendEntity(text);
+                tr.AddNewlyCreatedDBObject(text, true);
+
+                // Commit the transaction to save the changes
+                tr.Commit();
+
+            }
+        }
 
         public void Initialize()
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
-            double newExtendValue = 0.05;
+            double newExtendValue = 5;
 
             byte red = 242;
             byte green = 113;
