@@ -148,6 +148,27 @@ namespace AcBoltedStorageTankGenerator
 
             Point3d ThreeDFrontInsertionPoint = new Point3d(ThreeDInsertionPoint.X + 1620.4012, insertionPoint.Y - 4880, insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B", true);
+
+            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            {
+                Point3d topInsertionPoint = new Point3d(ThreeDInsertionPoint.X + 5691.7612, ThreeDInsertionPoint.Y + (0.7663514754 * storageTank.Height), ThreeDInsertionPoint.Z);
+                BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
+                    doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+                Point3d topCorner2 = new Point3d(topInsertionPoint.X , topInsertionPoint.Y, topInsertionPoint.Z);
+                // Create a rectangle using a Polyline
+                using (Polyline rectangle = new Polyline())
+                {
+                    rectangle.AddVertexAt(0, new Point2d(topInsertionPoint.X, topInsertionPoint.Y), 0, 0, 0);
+                    rectangle.AddVertexAt(1, new Point2d(topCorner2.X, topInsertionPoint.Y), 0, 0, 0);
+
+                    // Add the rectangle to the current space
+                    currentSpace.AppendEntity(rectangle);
+                    tr.AddNewlyCreatedDBObject(rectangle, true);
+                }
+
+                // Commit the transaction to save the changes
+                tr.Commit();
+            }
         }
 
 
@@ -512,7 +533,7 @@ namespace AcBoltedStorageTankGenerator
 
                 DBText text = new DBText
                 {
-                    Position = new Point3d(insertionPoint.X+1220, insertionPoint.Y - 610, insertionPoint.Z),
+                    Position = new Point3d(insertionPoint.X + 1220, insertionPoint.Y - 610, insertionPoint.Z),
                     Height = 180,
                     TextString = view
                 };
