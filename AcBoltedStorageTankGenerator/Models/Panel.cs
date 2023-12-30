@@ -1,4 +1,4 @@
-﻿namespace AcBoltedStorageTankGenereator.Models
+﻿namespace AcBoltedStorageTankGenerator.Models
 {
     public class Panel
     {

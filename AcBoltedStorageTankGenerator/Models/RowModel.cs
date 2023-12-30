@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace AcBoltedStorageTankGenereator.Models
+namespace AcBoltedStorageTankGenerator.Models
 {
     public class RowModel
     {

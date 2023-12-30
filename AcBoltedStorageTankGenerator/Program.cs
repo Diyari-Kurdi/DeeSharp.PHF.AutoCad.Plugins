@@ -1,4 +1,4 @@
-﻿using AcBoltedStorageTankGenereator.Models;
+﻿using AcBoltedStorageTankGenerator.Models;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -130,10 +130,10 @@ namespace AcBoltedStorageTankGenerator
             //Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2440, insertionPoint.Z);
             //BuildInnerView(doc, storageTank, InnerInsertionPoint);
 
-            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1620.4012), insertionPoint.Y - ((storageTank.Height / 1220) * 934.9488), insertionPoint.Z);
+            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width + 77.261, insertionPoint.Y - (storageTank.Height / 1220 * 934.9488) + 695.4019, insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
 
-            Point3d ThreeDFrontInsertionPoint = new Point3d(ThreeDInsertionPoint.X + ((storageTank.Length / 1220) * 809.6399), insertionPoint.Y - ((storageTank.Width / 1220) * (1901.02 - 187.080)), insertionPoint.Z);
+            Point3d ThreeDFrontInsertionPoint = new Point3d(ThreeDInsertionPoint.X + (storageTank.Length / 1220 * 892.4130076273)+ 651.3703, insertionPoint.Y - ((storageTank.Width / 1220) * (1901.02 -180)), insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B", true);
 
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
@@ -471,14 +471,14 @@ namespace AcBoltedStorageTankGenerator
                             Point3d currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z);
                             if (!isFront)
                             {
-                                num += -467.3952;
-                                num2 += 809.6399;
+                                num += -609.9504;
+                                num2 += 1056.5796;
                                 currentInsertionPoint = new Point3d(currentInsertionPoint.X + num2, currentInsertionPoint.Y + num, currentInsertionPoint.Z);
                             }
                             else
                             {
-                                num += 467.3952;
-                                num2 += 809.6399;
+                                num += 609.9504;
+                                num2 += 1056.5796;
                                 currentInsertionPoint = new Point3d(currentInsertionPoint.X + num2, currentInsertionPoint.Y + num, currentInsertionPoint.Z);
                             }
 
