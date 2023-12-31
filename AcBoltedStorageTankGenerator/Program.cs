@@ -67,17 +67,17 @@ namespace AcBoltedStorageTankGenerator
 
             if (ppr.Status != PromptStatus.OK)
                 return;
-            StorageTank storageTank = new StorageTank();//GetUserInput(doc, editor);
+            StorageTank storageTank = GetUserInput(doc, editor);
 
-            storageTank.LeftAndRight.Add(new RowModel()
-            {
-                Panels = new List<Panel>()
-                        {
-                            new Panel(),
-                            new Panel(),
-                            new Panel(),
-                        }
-            });
+            //storageTank.LeftAndRight.Add(new RowModel()
+            //{
+            //    Panels = new List<Panel>()
+            //            {
+            //                new Panel(),
+            //                new Panel(),
+            //                new Panel(),
+            //            }
+            //});
             //storageTank.LeftAndRight.Add(new RowModel()
             //{
             //    Panels = new List<Panel>()
@@ -96,15 +96,16 @@ namespace AcBoltedStorageTankGenerator
             //});
 
 
-            storageTank.FrontAndBack.Add(new RowModel()
-            {
-                Panels = new List<Panel>()
-                        {
-                            new Panel(),
-                            new Panel(),
-                            new Panel()
-                        }
-            });
+            //storageTank.FrontAndBack.Add(new RowModel()
+            //{
+            //    Panels = new List<Panel>()
+            //            {
+            //                new Panel(),
+            //                new Panel(),
+            //                new Panel(),
+            //                new Panel()
+            //            }
+            //});
             //storageTank.FrontAndBack.Add(new RowModel()
             //{
             //    Panels = new List<Panel>()
@@ -124,24 +125,24 @@ namespace AcBoltedStorageTankGenerator
 
             Point3d insertionPoint = ppr.Value;
 
-            //BuildSideViews(doc, storageTank, insertionPoint, "A - View");
-            //Point3d FrontInsertionPoint = new Point3d(insertionPoint.X + (storageTank.Length * 2), insertionPoint.Y, insertionPoint.Z);
-            //BuildSideViews(doc, storageTank, FrontInsertionPoint, "B - View", true);
-            //Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2440, insertionPoint.Z);
-            //BuildInnerView(doc, storageTank, InnerInsertionPoint);
+            BuildSideViews(doc, storageTank, insertionPoint, "A - View");
+            Point3d FrontInsertionPoint = new Point3d(insertionPoint.X + (storageTank.Length * 2), insertionPoint.Y, insertionPoint.Z);
+            BuildSideViews(doc, storageTank, FrontInsertionPoint, "B - View", true);
+            Point3d InnerInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y - 2440, insertionPoint.Z);
+            BuildInnerView(doc, storageTank, InnerInsertionPoint);
 
-            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width + 77.261, insertionPoint.Y - (storageTank.Height / 1220 * 934.9488) + 695.4019, insertionPoint.Z);
+            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Height / 1220 * 609.9504), insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
 
-            Point3d ThreeDFrontInsertionPoint = new Point3d(ThreeDInsertionPoint.X + (storageTank.Length / 1220 * 892.4130076273)+ 651.3703, insertionPoint.Y - ((storageTank.Width / 1220) * (1901.02 -180)), insertionPoint.Z);
+            Point3d ThreeDFrontInsertionPoint = new Point3d(insertionPoint.X + (((storageTank.Length / 1220) - 1) * 1056.5796), insertionPoint.Y - (storageTank.Height / 1220 * 609.9504) + 1219.9008, insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B", true);
-
+            /*
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
-                Point3d startPoint = new Point3d(ThreeDInsertionPoint.X + 180.4838351145, ThreeDInsertionPoint.Y - ((storageTank.Height / 1220) * 934.9488), ThreeDInsertionPoint.Z);
+                Point3d startPoint = new Point3d(insertionPoint.X + 1016.65296666, insertionPoint.Y + (storageTank.Length/1220)*1016.65296666, ThreeDInsertionPoint.Z);
                 BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
                     doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-                Point3d endPoint = new Point3d(startPoint.X + (storageTank.Width / 1220) * 936.0935, startPoint.Y , startPoint.Z);
+                Point3d endPoint = new Point3d(startPoint.X + (storageTank.Width / 1220) * 1219.9999, startPoint.Y, startPoint.Z);
                 double angleInRadians = Math.PI * 30.0 / 180.0;
 
                 // Create a transformation matrix for rotation
@@ -150,7 +151,7 @@ namespace AcBoltedStorageTankGenerator
                 // Apply the rotation transformation to the start and end points
                 startPoint = startPoint.TransformBy(rotationMatrix);
                 endPoint = endPoint.TransformBy(rotationMatrix);
-                 
+
                 // Create the rotated line
                 Line rotatedLine = new Line(startPoint, endPoint);
 
@@ -159,6 +160,7 @@ namespace AcBoltedStorageTankGenerator
                 tr.Commit();
 
             }
+            */
         }
 
 
@@ -529,10 +531,18 @@ namespace AcBoltedStorageTankGenerator
 
                 DBText text = new DBText
                 {
-                    Position = new Point3d(insertionPoint.X + 1220, insertionPoint.Y - 1220, insertionPoint.Z),
                     Height = 180,
                     TextString = view
                 };
+                //B Is Front
+                if (isFront)
+                {
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796)- text.GeometricExtents.MaxPoint.X/2, insertionPoint.Y + storageTank.Width / 1220 * 609.9504 / 2, insertionPoint.Z);
+                }
+                else
+                {
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796 / 2) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - storageTank.Width / 1220 * 609.9504 / 2, insertionPoint.Z);
+                }
                 currentSpace.AppendEntity(text);
                 tr.AddNewlyCreatedDBObject(text, true);
 
