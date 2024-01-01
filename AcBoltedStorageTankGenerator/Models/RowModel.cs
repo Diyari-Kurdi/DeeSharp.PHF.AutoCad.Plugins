@@ -18,6 +18,6 @@ namespace AcBoltedStorageTankGenerator.Models
 
 
         public double RowHeight
-            => Panels.Sum(p => p.Height);
+            => Panels.FirstOrDefault().Height;
     }
 }

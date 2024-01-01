@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace AcBoltedStorageTankGenerator.Models
 {
@@ -11,6 +12,6 @@ namespace AcBoltedStorageTankGenerator.Models
         public double Width
            => FrontAndBack[0].RowWidth;
         public double Height
-           => LeftAndRight[0].RowHeight;
+           => LeftAndRight.Sum(p=>p.RowHeight);
     }
 }
