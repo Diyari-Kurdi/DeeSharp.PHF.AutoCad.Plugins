@@ -57,7 +57,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Assets\Panels.dwg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
