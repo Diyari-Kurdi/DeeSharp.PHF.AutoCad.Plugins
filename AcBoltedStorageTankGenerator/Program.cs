@@ -75,7 +75,7 @@ namespace AcBoltedStorageTankGenerator
             //BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z), "Top - View");
             //BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Width + 2440, insertionPoint.Y, insertionPoint.Z), "Under - View");
 
-            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z), Direction.Left);
 
 
             ////A
@@ -428,7 +428,7 @@ namespace AcBoltedStorageTankGenerator
             }
         }
 
-        private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint)
+        private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint, Direction direction)
         {
             string blockName = "Triangle";
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
@@ -464,44 +464,42 @@ namespace AcBoltedStorageTankGenerator
                     tr.AddNewlyCreatedDBObject(text, true);
                 }
 
-
-
-                List<RowModel> rows = storageTank.FrontAndBack;
-                int rowsNum = rows.Count;
                 int rowCount = 1;
+                int offset = 300;
                 // Loop to insert multiple instances of the block on top of each other
-                for (int panelIndex = 0; panelIndex < (storageTank.Width / 1220); panelIndex++)
+                for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
                 {
-                    Point3d currentInsertionPoint = new Point3d(
-                        insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
-                    if (panelIndex == 0)
+                    Point3d currentInsertionPoint;
+                    switch (direction)
                     {
-                        for (int i = 0; i < 2; i++)
-                        {
-                            var offset = 100;
-                            if (i == 0)
-                                offset = 100;
-                            else
-                                offset = -300;
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + 1220 + offset, insertionPoint.Z);
-                            BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
-                            // Add the block reference to the current space
-                            currentSpace.AppendEntity(blockRef);
-                            tr.AddNewlyCreatedDBObject(blockRef, true);
-                        }
-
+                        case Direction.Left:
+                            currentInsertionPoint = new Point3d(insertionPoint.X - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            break;
+                        case Direction.Right:
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            break;
+                        case Direction.Up:
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            break;
+                        case Direction.Down:
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            break;
+                        default:
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            break;
                     }
-                    else if (panelIndex == (storageTank.Length / 1220) - 1)
+                    if (panelIndex == (storageTank.Length / 1220) - 1)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            var offset = 300;
+
                             if (i == 0)
                                 offset = 300;
                             else
                                 offset = -300;
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
+                            currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
                             BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+
                             // Add the block reference to the current space
                             currentSpace.AppendEntity(blockRef);
                             tr.AddNewlyCreatedDBObject(blockRef, true);
@@ -511,12 +509,11 @@ namespace AcBoltedStorageTankGenerator
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            var offset = 100;
                             if (i == 0)
                                 offset = 100;
                             else
                                 offset = -300;
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) + offset, insertionPoint.Z);
+                            currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + (rowCount * 1220) + offset, insertionPoint.Z);
                             BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
                             // Add the block reference to the current space
                             currentSpace.AppendEntity(blockRef);
@@ -563,4 +560,12 @@ namespace AcBoltedStorageTankGenerator
             // Clean up resources
         }
     }
+}
+
+public enum Direction
+{
+    Left,
+    Right,
+    Up,
+    Down,
 }
