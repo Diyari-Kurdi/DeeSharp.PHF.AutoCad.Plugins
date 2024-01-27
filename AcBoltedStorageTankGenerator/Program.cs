@@ -5,6 +5,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -74,10 +75,13 @@ namespace AcBoltedStorageTankGenerator
 
             //BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z), "Top - View");
             //BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Width + 2440, insertionPoint.Y, insertionPoint.Z), "Under - View");
+            // Create a rectangle with panel.Height and panel.Width next to the added object
 
-            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z), Direction.Left);
 
+            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
 
+            //BuildLeftAndRightInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildTopAndDownInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
             ////A
             //Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Length / 1220 * 609.9504) - (storageTank.Width + 6100), insertionPoint.Z);
             //Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
@@ -428,17 +432,15 @@ namespace AcBoltedStorageTankGenerator
             }
         }
 
-        private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint, Direction direction)
+        private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint) 
         {
-            string blockName = "Triangle";
+            Point3d corner2 = new Point3d(storageTank.Width, storageTank.Length, 0);
+
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {// Check if the block definition exists in the drawing
                 BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
                 BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
                     doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-                // Create a rectangle with panel.Height and panel.Width next to the added object
-                Point3d corner2 = new Point3d(storageTank.Width, storageTank.Length, 0);
-
                 // Create a rectangle using a Polyline
                 using (Polyline rectangle = new Polyline())
                 {
@@ -464,66 +466,173 @@ namespace AcBoltedStorageTankGenerator
                     tr.AddNewlyCreatedDBObject(text, true);
                 }
 
-                int rowCount = 1;
-                int offset = 300;
-                // Loop to insert multiple instances of the block on top of each other
-                for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
+                tr.Commit();
+            }
+
+        }
+
+        private void BuildLeftAndRightInnerSupports(Document doc, StorageTank storageTank, Point3d insertionPoint)
+        {
+            string blockName = "Triangle";
+            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            {// Check if the block definition exists in the drawing
+                BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+                BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
+                    doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+
+                
+                for (int direction = 0; direction < 2; direction++)
                 {
+                    int rowCount = 1;
+                    int offset = 300;
+                    double rotationAngle = 0;
                     Point3d currentInsertionPoint;
                     switch (direction)
                     {
-                        case Direction.Left:
-                            currentInsertionPoint = new Point3d(insertionPoint.X - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                        case 0:
+                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            rotationAngle = Math.PI;
                             break;
-                        case Direction.Right:
+                        case 1:
                             currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
-                            break;
-                        case Direction.Up:
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
-                            break;
-                        case Direction.Down:
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+
                             break;
                         default:
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z);
                             break;
                     }
-                    if (panelIndex == (storageTank.Length / 1220) - 1)
+                    // Loop to insert multiple instances of the block on top of each other
+                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
                     {
-                        for (int i = 0; i < 2; i++)
+                        if (panelIndex == (storageTank.Length / 1220) - 1)
                         {
+                            for (int i = 0; i < 2; i++)
+                            {
 
-                            if (i == 0)
-                                offset = 300;
-                            else
-                                offset = -300;
-                            currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
-                            BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+                                if (i == 0)
+                                    offset = 300;
+                                else
+                                    offset = -300;
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
+                                BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
 
-                            // Add the block reference to the current space
-                            currentSpace.AppendEntity(blockRef);
-                            tr.AddNewlyCreatedDBObject(blockRef, true);
+                                // Add the block reference to the current space
+                                currentSpace.AppendEntity(blockRef);
+                                tr.AddNewlyCreatedDBObject(blockRef, true);
+                            }
                         }
+                        else
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+                                if (i == 0)
+                                    offset = 100;
+                                else
+                                    offset = -300;
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + (rowCount * 1220) + offset, insertionPoint.Z);
+                                BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+
+                                Point3d center = blockRef.GeometricExtents.MinPoint + ((blockRef.GeometricExtents.MaxPoint - blockRef.GeometricExtents.MinPoint) / 2.0);
+
+                                // Create a rotation matrix
+                                Matrix3d rotationMatrix = Matrix3d.Rotation(rotationAngle, Vector3d.ZAxis, center);
+
+                                blockRef.TransformBy(rotationMatrix);
+                                // Add the block reference to the current space
+                                currentSpace.AppendEntity(blockRef);
+                                tr.AddNewlyCreatedDBObject(blockRef, true);
+                            }
+                        }
+
+                        rowCount++;
                     }
-                    else
+                } 
+                // Commit the transaction to save the changes
+
+                tr.Commit();
+
+            }
+
+        }
+
+        private void BuildTopAndDownInnerSupports(Document doc, StorageTank storageTank, Point3d insertionPoint)
+        {
+            string blockName = "Triangle";
+            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            {// Check if the block definition exists in the drawing
+                BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+                BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
+                    doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+
+
+                for (int direction = 0; direction < 2; direction++)
+                {
+                    int rowCount = 1;
+                    int offset = 300;
+                    double rotationAngle = 0;
+                    Point3d currentInsertionPoint;
+                    switch (direction)
                     {
-                        for (int i = 0; i < 2; i++)
-                        {
-                            if (i == 0)
-                                offset = 100;
-                            else
-                                offset = -300;
-                            currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + (rowCount * 1220) + offset, insertionPoint.Z);
-                            BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
-                            // Add the block reference to the current space
-                            currentSpace.AppendEntity(blockRef);
-                            tr.AddNewlyCreatedDBObject(blockRef, true);
-                        }
-                    }
+                        case 0:
+                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            rotationAngle = -Math.PI;
+                            break;
+                        case 1:
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
 
-                    rowCount++;
+                            break;
+                        default:
+                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z);
+                            break;
+                    }
+                    // Loop to insert multiple instances of the block on top of each other
+                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
+                    {
+                        if (panelIndex == (storageTank.Length / 1220) - 1)
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+
+                                if (i == 0)
+                                    offset = 300;
+                                else
+                                    offset = -300;
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
+                                BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+
+                                // Add the block reference to the current space
+                                currentSpace.AppendEntity(blockRef);
+                                tr.AddNewlyCreatedDBObject(blockRef, true);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+                                if (i == 0)
+                                    offset = 100;
+                                else
+                                    offset = -300;
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + (rowCount * 1220) + offset, insertionPoint.Z);
+                                BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
+
+                                Point3d center = blockRef.GeometricExtents.MinPoint + ((blockRef.GeometricExtents.MaxPoint - blockRef.GeometricExtents.MinPoint) / 2.0);
+
+                                // Create a rotation matrix
+                                Matrix3d rotationMatrix = Matrix3d.Rotation(rotationAngle, Vector3d.ZAxis, center);
+
+                                blockRef.TransformBy(rotationMatrix);
+                                // Add the block reference to the current space
+                                currentSpace.AppendEntity(blockRef);
+                                tr.AddNewlyCreatedDBObject(blockRef, true);
+                            }
+                        }
+
+                        rowCount++;
+                    }
                 }
                 // Commit the transaction to save the changes
+
                 tr.Commit();
 
             }
