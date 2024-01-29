@@ -67,49 +67,49 @@ namespace AcBoltedStorageTankGenerator
                 return;
             Point3d insertionPoint = new Point3d(0, 0, 0);
 
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "C - View");
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "A - View");
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "C - View");
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "A - View");
 
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "D - View", true);
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "B - View", true);
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "D - View", true);
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X , insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "B - View", true);
 
             BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z), "Top - View");
-            BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Width + 2440, insertionPoint.Y, insertionPoint.Z), "Under - View");
+            BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y, insertionPoint.Z), "Under - View");
             // Create a rectangle with panel.Height and panel.Width next to the added object
 
 
-            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildInnerView(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Length * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
 
-            BuildLeftAndRightInnerTriangleSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
-            BuildTopAndDownInnerTriangleSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildLeftAndRightInnerTriangleSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Length * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildTopAndDownInnerTriangleSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Length * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
 
-            BuildLeftAndRightInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
-            BuildTopAndDownInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Width * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildLeftAndRightInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Length * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
+            BuildTopAndDownInnerSupports(doc, storageTank, new Point3d(insertionPoint.X + (storageTank.Length * 2) + 4880, insertionPoint.Y, insertionPoint.Z));
 
             ////A
-            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Length / 1220 * 609.9504) - (storageTank.Width + 6100), insertionPoint.Z);
+            Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width+storageTank.Length + 4880, insertionPoint.Y + (storageTank.Width / 1220 * 609.9504) + (storageTank.Width+2440), insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDInsertionPoint, "A", false);
 
             ////B
-            Point3d ThreeDFrontInsertionPoint = new Point3d(insertionPoint.X + (((storageTank.Length / 1220) - 1) * 1056.5796), insertionPoint.Y - (storageTank.Width + 6100), insertionPoint.Z);
+            Point3d ThreeDFrontInsertionPoint = new Point3d(insertionPoint.X + (((storageTank.Width / 1220) - 1) * 1056.5796) + storageTank.Width + storageTank.Length + 4880, insertionPoint.Y + (storageTank.Width + 2440), insertionPoint.Z);
             Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B", true);
 
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
-                Point3d startPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Length / 1220 * 609.9504) - (storageTank.Width + 6100) + storageTank.Height, insertionPoint.Z);
+                Point3d startPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Width / 1220 * 609.9504) - (storageTank.Length + 6100) + storageTank.Height, insertionPoint.Z);
                 BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
                     doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
-                Point3d endPoint = new Point3d(startPoint.X + (storageTank.Length / 1220) * 1267.91754, startPoint.Y + ((storageTank.Width / 1220) * 609.9504), startPoint.Z);
+                Point3d endPoint = new Point3d(startPoint.X + (storageTank.Width / 1220) * 1267.91754, startPoint.Y + ((storageTank.Length / 1220) * 609.9504), startPoint.Z);
 
                 // Create the rotated line
                 Line firstLine = new Line(startPoint, endPoint);
-                Line secondLine = new Line(firstLine.EndPoint, new Point3d(insertionPoint.X + (storageTank.Width + storageTank.Length) / 1220 * 1056.5796, insertionPoint.Y + ((storageTank.Width / 1220) * 609.9504) + storageTank.Height - (storageTank.Width + 2440), insertionPoint.Z));
+                Line secondLine = new Line(firstLine.EndPoint, new Point3d(insertionPoint.X + (storageTank.Length + storageTank.Width) / 1220 * 1056.5796, insertionPoint.Y + ((storageTank.Length / 1220) * 609.9504) + storageTank.Height - (storageTank.Length + 2440), insertionPoint.Z));
 
                 // Define 3 points for the polyline
-                Point2d point1 = new Point2d(insertionPoint.X, insertionPoint.Y + (storageTank.Length / 1220 * 609.9504) + storageTank.Height - (storageTank.Width + 6100));
-                Point2d point2 = new Point2d(insertionPoint.X + (storageTank.Length / 1220) * 1056.5796, storageTank.Height - (storageTank.Width + 6100));
-                Point2d point3 = new Point2d(insertionPoint.X + (storageTank.Width + storageTank.Length) / 1220 * 1056.5796, insertionPoint.Y + ((storageTank.Width / 1220) * 609.9504) + storageTank.Height - (storageTank.Width + 6100));
+                Point2d point1 = new Point2d(insertionPoint.X, insertionPoint.Y + (storageTank.Width / 1220 * 609.9504) + storageTank.Height - (storageTank.Length + 6100));
+                Point2d point2 = new Point2d(insertionPoint.X + (storageTank.Width / 1220) * 1056.5796, storageTank.Height - (storageTank.Length + 6100));
+                Point2d point3 = new Point2d(insertionPoint.X + (storageTank.Length + storageTank.Width) / 1220 * 1056.5796, insertionPoint.Y + ((storageTank.Length / 1220) * 609.9504) + storageTank.Height - (storageTank.Length + 6100));
 
                 // Create the polyline
                 Polyline polyline = new Polyline();
@@ -120,7 +120,7 @@ namespace AcBoltedStorageTankGenerator
                 Point3d centroid = polyline.GeometricExtents.MinPoint + ((polyline.GeometricExtents.MaxPoint - polyline.GeometricExtents.MinPoint) / 2.0);
                 Matrix3d rotationMatrix = Matrix3d.Rotation(Math.PI, Vector3d.ZAxis, new Point3d(point1.X, point1.Y, insertionPoint.Z));
                 polyline.TransformBy(rotationMatrix);
-                Matrix3d moveMatrix = Matrix3d.Displacement(new Vector3d(((storageTank.Width / 1220) + (storageTank.Length / 1220)) * 1056.5796, ((storageTank.Width / 1220) - (storageTank.Length / 1220)) * 609.9504, 0));
+                Matrix3d moveMatrix = Matrix3d.Displacement(new Vector3d((((storageTank.Length / 1220) + (storageTank.Width / 1220)) * 1056.5796) + storageTank.Width + storageTank.Length + 4880, ((storageTank.Length / 1220) - (storageTank.Width / 1220)) * 609.9504, 0));
                 polyline.TransformBy(moveMatrix);
 
                 currentSpace.AppendEntity(polyline);
@@ -147,24 +147,15 @@ namespace AcBoltedStorageTankGenerator
             panelsHeight.DefaultValue = 1220;
             userInput.DefaultValue = string.Empty;
 
-            PromptIntegerResult leftColumns = editor.GetInteger(numberOfLeftColumns);
-            if (leftColumns.Status != PromptStatus.OK || leftColumns.Value <= 0)
-                return null;
-            PromptIntegerResult frontColumns = editor.GetInteger(numberOfFrontColumns);
+            PromptIntegerResult frontColumns = editor.GetInteger(numberOfLeftColumns);
             if (frontColumns.Status != PromptStatus.OK || frontColumns.Value <= 0)
+                return null;
+            PromptIntegerResult leftColumns = editor.GetInteger(numberOfFrontColumns);
+            if (leftColumns.Status != PromptStatus.OK || leftColumns.Value <= 0)
                 return null;
             PromptIntegerResult rows = editor.GetInteger(numberOfRows);
             if (rows.Status != PromptStatus.OK || rows.Value <= 0)
                 return null;
-            for (int i = 0; i < rows.Value; i++)
-            {
-                RowModel row = new RowModel();
-                for (int column = 0; column < leftColumns.Value; column++)
-                {
-                    row.Panels.Add(new Panel());
-                }
-                storageTank.LeftAndRight.Add(row);
-            }
             for (int i = 0; i < rows.Value; i++)
             {
                 RowModel row = new RowModel();
@@ -173,6 +164,15 @@ namespace AcBoltedStorageTankGenerator
                     row.Panels.Add(new Panel());
                 }
                 storageTank.FrontAndBack.Add(row);
+            }
+            for (int i = 0; i < rows.Value; i++)
+            {
+                RowModel row = new RowModel();
+                for (int column = 0; column < leftColumns.Value; column++)
+                {
+                    row.Panels.Add(new Panel());
+                }
+                storageTank.LeftAndRight.Add(row);
             }
             return storageTank;
         }
@@ -281,7 +281,7 @@ namespace AcBoltedStorageTankGenerator
                 BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(
                     doc.Database.CurrentSpaceId, OpenMode.ForWrite);
                 // Create a rectangle with panel.Height and panel.Width next to the added object
-                Point3d corner2 = new Point3d(storageTank.Width, storageTank.Length, 0);
+                Point3d corner2 = new Point3d(storageTank.Length, storageTank.Width, 0);
 
                 // Create a rectangle using a Polyline
                 using (Polyline rectangle = new Polyline())
@@ -419,11 +419,11 @@ namespace AcBoltedStorageTankGenerator
                 //B Is Front
                 if (isFront)
                 {
-                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y + storageTank.Width / 1220 * 609.9504 / 2, insertionPoint.Z);
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1056.5796) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y + storageTank.Length / 1220 * 609.9504 / 2, insertionPoint.Z);
                 }
                 else
                 {
-                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796 / 2) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - storageTank.Width / 1220 * 609.9504 / 2, insertionPoint.Z);
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1056.5796 / 2) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - storageTank.Length / 1220 * 609.9504 / 2, insertionPoint.Z);
                 }
                 currentSpace.AppendEntity(text);
                 tr.AddNewlyCreatedDBObject(text, true);
@@ -436,7 +436,7 @@ namespace AcBoltedStorageTankGenerator
 
         private void BuildInnerView(Document doc, StorageTank storageTank, Point3d insertionPoint)
         {
-            Point3d corner2 = new Point3d(storageTank.Width, storageTank.Length, 0);
+            Point3d corner2 = new Point3d(storageTank.Length, storageTank.Width, 0);
 
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {// Check if the block definition exists in the drawing
@@ -496,7 +496,7 @@ namespace AcBoltedStorageTankGenerator
                             rotationAngle = Math.PI;
                             break;
                         case 1:
-                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
+                            currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Length - 324.323, insertionPoint.Y + (rowCount * 1220) - 300, insertionPoint.Z);
 
                             break;
                         default:
@@ -504,9 +504,9 @@ namespace AcBoltedStorageTankGenerator
                             break;
                     }
                     // Loop to insert multiple instances of the block on top of each other
-                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
+                    for (int panelIndex = 0; panelIndex < (storageTank.Width / 1220) - 1; panelIndex++)
                     {
-                        if (panelIndex == (storageTank.Length / 1220) - 1)
+                        if (panelIndex == (storageTank.Width / 1220) - 1)
                         {
                             for (int i = 0; i < 2; i++)
                             {
@@ -515,7 +515,7 @@ namespace AcBoltedStorageTankGenerator
                                     offset = 300;
                                 else
                                     offset = -300;
-                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset, insertionPoint.Z);
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Length + offset, insertionPoint.Z);
                                 BlockReference blockRef = new BlockReference(currentInsertionPoint, bt[blockName]);
 
                                 // Add the block reference to the current space
@@ -580,16 +580,16 @@ namespace AcBoltedStorageTankGenerator
                             rotationAngle = -Math.PI / 2;
                             break;
                         case 1:
-                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Length - offset, insertionPoint.Z);
+                            currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Width - offset, insertionPoint.Z);
                             rotationAngle = Math.PI / 2;
                             break;
                         default:
                             currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + 63.3844, insertionPoint.Z);
                             break;
                     }
-                    for (int panelIndex = 0; panelIndex < (storageTank.Width / 1220) - 1; panelIndex++)
+                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
                     {
-                        if (panelIndex == (storageTank.Width / 1220) - 1)
+                        if (panelIndex == (storageTank.Length / 1220) - 1)
                         {
                             for (int i = 0; i < 2; i++)
                             {
@@ -649,9 +649,9 @@ namespace AcBoltedStorageTankGenerator
                     double offset = 197.5543;
                     Point3d currentInsertionPoint = new Point3d(insertionPoint.X, insertionPoint.Y + (rowCount * 1220) - offset, insertionPoint.Z);
                     // Loop to insert multiple instances of the block on top of each other
-                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
+                    for (int panelIndex = 0; panelIndex < (storageTank.Width / 1220) - 1; panelIndex++)
                     {
-                        if (panelIndex == (storageTank.Length / 1220) - 1)
+                        if (panelIndex == (storageTank.Width / 1220) - 1)
                         {
                             for (int i = 0; i < 2; i++)
                             {
@@ -660,11 +660,11 @@ namespace AcBoltedStorageTankGenerator
                                     offset = 197.5543;
                                 else
                                     offset = -202.1104;
-                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Width + offset + 25, insertionPoint.Z);
+                                currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + storageTank.Length + offset + 25, insertionPoint.Z);
 
 
                                 Polyline polyline = new Polyline();
-                                Point3d corner2 = new Point3d(storageTank.Width, 50, 0);
+                                Point3d corner2 = new Point3d(storageTank.Length, 50, 0);
 
                                 polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X, currentInsertionPoint.Y), 0, 0, 0);
                                 polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X, currentInsertionPoint.Y), 0, 0, 0);
@@ -690,7 +690,7 @@ namespace AcBoltedStorageTankGenerator
                                 currentInsertionPoint = new Point3d(currentInsertionPoint.X, insertionPoint.Y + (rowCount * 1220) + offset - 25, insertionPoint.Z);
                                 Polyline polyline = new Polyline();
 
-                                Point3d corner2 = new Point3d(storageTank.Width-100, 50, 0);
+                                Point3d corner2 = new Point3d(storageTank.Length-100, 50, 0);
 
                                 polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X+100, currentInsertionPoint.Y), 0, 0, 0);
                                 polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X, currentInsertionPoint.Y), 0, 0, 0);
@@ -731,9 +731,9 @@ namespace AcBoltedStorageTankGenerator
                     double offset = 197.5543;
                     Point3d currentInsertionPoint = new Point3d(insertionPoint.X + (rowCount * 1220) - offset, insertionPoint.Y , insertionPoint.Z);
                     // Loop to insert multiple instances of the block on top of each other
-                    for (int panelIndex = 0; panelIndex < (storageTank.Width / 1220) - 1; panelIndex++)
+                    for (int panelIndex = 0; panelIndex < (storageTank.Length / 1220) - 1; panelIndex++)
                     {
-                        if (panelIndex == (storageTank.Width / 1220) - 1)
+                        if (panelIndex == (storageTank.Length / 1220) - 1)
                         {
                             for (int i = 0; i < 2; i++)
                             {
@@ -742,11 +742,11 @@ namespace AcBoltedStorageTankGenerator
                                     offset = 197.5543;
                                 else
                                     offset = -98.7771;
-                                currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Length + offset + 12.5, currentInsertionPoint.Y , insertionPoint.Z);
+                                currentInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width + offset + 12.5, currentInsertionPoint.Y , insertionPoint.Z);
 
 
                                 Polyline polyline = new Polyline();
-                                Point3d corner2 = new Point3d(50, storageTank.Length, 0);
+                                Point3d corner2 = new Point3d(50, storageTank.Width, 0);
 
                                 polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X, currentInsertionPoint.Y), 0, 0, 0);
                                 polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X, currentInsertionPoint.Y), 0, 0, 0);
@@ -772,7 +772,7 @@ namespace AcBoltedStorageTankGenerator
                                 currentInsertionPoint = new Point3d(insertionPoint.X + (rowCount * 1220) + offset - 12.5, currentInsertionPoint.Y , insertionPoint.Z);
                                 Polyline polyline = new Polyline();
 
-                                Point3d corner2 = new Point3d(50, storageTank.Length - 200, 0);
+                                Point3d corner2 = new Point3d(50, storageTank.Width - 200, 0);
 
                                 polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X + 100, currentInsertionPoint.Y + 100), 0, 0, 0);
                                 polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X, currentInsertionPoint.Y + 100), 0, 0, 0);
@@ -829,12 +829,4 @@ namespace AcBoltedStorageTankGenerator
             // Clean up resources
         }
     }
-}
-
-public enum Direction
-{
-    Left,
-    Right,
-    Up,
-    Down,
 }
