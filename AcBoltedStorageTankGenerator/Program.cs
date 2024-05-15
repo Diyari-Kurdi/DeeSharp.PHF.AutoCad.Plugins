@@ -4,7 +4,6 @@ using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.PlottingServices;
 using Autodesk.AutoCAD.Runtime;
 using System;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ namespace AcBoltedStorageTankGenerator
 {
     public class Program : IExtensionApplication
     {
+        ObjectId dimStyle = new ObjectId();
         readonly string dwgFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Panels.dwg");
         private void ImportBlocks()
         {
@@ -68,11 +68,11 @@ namespace AcBoltedStorageTankGenerator
                 return;
             Point3d insertionPoint = new Point3d(0, 0, 0);
 
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "C - View");
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "A - View");
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "D - View");
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y + insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "B - View");
 
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "D - View", true);
-            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "B - View", true);
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + storageTank.Width + 2440, insertionPoint.Z), "C - View", true);
+            BuildSideViews(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y + (storageTank.Width + storageTank.Height * 2) + 2440, insertionPoint.Z), "A - View", true);
 
             BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X, insertionPoint.Y, insertionPoint.Z), "Top - View");
             BuildTopBottomView(doc, storageTank, new Point3d(insertionPoint.X + storageTank.Length + 2440, insertionPoint.Y, insertionPoint.Z), "Under - View");
@@ -91,11 +91,11 @@ namespace AcBoltedStorageTankGenerator
 
             //////A
             Point3d ThreeDInsertionPoint = new Point3d(insertionPoint.X + storageTank.Width + storageTank.Length + 4880, insertionPoint.Y + (storageTank.Width / 1220 * 609.9504) + (storageTank.Width + 2440), insertionPoint.Z);
-            Build3DView(doc, storageTank, ThreeDInsertionPoint, "A - View", false);
+            Build3DView(doc, storageTank, ThreeDInsertionPoint, "B - View", false);
 
             //////B
             Point3d ThreeDFrontInsertionPoint = new Point3d(insertionPoint.X + (((storageTank.Width / 1220) - 1) * 1056.5796) + storageTank.Width + storageTank.Length + 4880, insertionPoint.Y + (storageTank.Width + 2440), insertionPoint.Z);
-            Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "B - View", true);
+            Build3DView(doc, storageTank, ThreeDFrontInsertionPoint, "A - View", true);
 
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
@@ -250,21 +250,37 @@ namespace AcBoltedStorageTankGenerator
                     }
                 }
 
-                using (var dim = new AlignedDimension(insertionPoint + new Vector3d(0.0, storageTank.Height, 0.0), insertionPoint + new Vector3d(0.0, 0, 0.0), insertionPoint + new Vector3d(-1000, 0.0, 0.0), string.Empty, doc.Database.Dimstyle))
+                if (view.StartsWith("A") || view.StartsWith("B"))
                 {
-                    currentSpace.AppendEntity(dim);
-                    tr.AddNewlyCreatedDBObject(dim, true);
+                    
+
+                    using (var dim = new AlignedDimension(insertionPoint + new Vector3d(0.0, storageTank.Height, 0.0), insertionPoint + new Vector3d(0.0, 0, 0.0), insertionPoint + new Vector3d(-1000, 0.0, 0.0), string.Empty, dimStyle))
+                    {
+                        currentSpace.AppendEntity(dim);
+                        tr.AddNewlyCreatedDBObject(dim, true);
+                    }
+                    var dimLength = 0.0;
+                    if (isFront)
+                        dimLength = storageTank.Length;
+                    else
+                        dimLength = storageTank.Width;
+
+                    using (var dim = new AlignedDimension(insertionPoint + new Vector3d(0.0, storageTank.Height, 0.0), insertionPoint + new Vector3d(dimLength, storageTank.Height, 0.0), insertionPoint + new Vector3d(0, storageTank.Height + 1000, 0.0), string.Empty, doc.Database.Dimstyle))
+                    {
+                        currentSpace.AppendEntity(dim);
+                        tr.AddNewlyCreatedDBObject(dim, true);
+                    }
+
+                    DBText text = new DBText
+                    {
+                        Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
+                        Height = 180,
+                        TextString = view
+                    };
+
+                    currentSpace.AppendEntity(text);
+                    tr.AddNewlyCreatedDBObject(text, true);
                 }
-
-                DBText text = new DBText
-                {
-                    Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
-                    Height = 180,
-                    TextString = view
-                };
-                currentSpace.AppendEntity(text);
-                tr.AddNewlyCreatedDBObject(text, true);
-
                 // Commit the transaction to save the changes
                 tr.Commit();
 
@@ -505,7 +521,7 @@ namespace AcBoltedStorageTankGenerator
                     {
                         if (panelIndex == (storageTank.Width / 1220) - 1 || panelIndex == 1)
                         {
-                            for (int i =0; i < 2; i++)
+                            for (int i = 0; i < 2; i++)
                             {
                                 if (i == 0)
                                     offset = 130;
@@ -666,7 +682,7 @@ namespace AcBoltedStorageTankGenerator
                             Polyline polyline = new Polyline();
                             Point3d corner2 = new Point3d(storageTank.Length - 200, 50, 0);
 
-                            polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X + 100, currentInsertionPoint.Y+100), 0, 0, 0);
+                            polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X + 100, currentInsertionPoint.Y + 100), 0, 0, 0);
                             polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X + 100, currentInsertionPoint.Y + 100), 0, 0, 0);
 
                             polyline.AddVertexAt(2, new Point2d(currentInsertionPoint.X + corner2.X + 100, currentInsertionPoint.Y + corner2.Y + 100), 0, 0, 0);
@@ -726,7 +742,7 @@ namespace AcBoltedStorageTankGenerator
 
                 int rowCount = 1;
                 double offset = 191.2771;
-                Point3d currentInsertionPoint = new Point3d(insertionPoint.X + (rowCount * 1220) , insertionPoint.Y, insertionPoint.Z);
+                Point3d currentInsertionPoint = new Point3d(insertionPoint.X + (rowCount * 1220), insertionPoint.Y, insertionPoint.Z);
                 // Loop to insert multiple instances of the block on top of each other
                 for (int panelIndex = 1; panelIndex <= (storageTank.Length / 1220) - 1; panelIndex++)
                 {
@@ -743,7 +759,7 @@ namespace AcBoltedStorageTankGenerator
 
 
                             Polyline polyline = new Polyline();
-                            Point3d corner2 = new Point3d(50, storageTank.Width-200, 0);
+                            Point3d corner2 = new Point3d(50, storageTank.Width - 200, 0);
 
                             polyline.AddVertexAt(0, new Point2d(currentInsertionPoint.X, currentInsertionPoint.Y + 100), 0, 0, 0);
                             polyline.AddVertexAt(1, new Point2d(currentInsertionPoint.X + corner2.X, currentInsertionPoint.Y + 100), 0, 0, 0);
@@ -807,7 +823,27 @@ namespace AcBoltedStorageTankGenerator
             Color newColor = Color.FromRgb(red, green, blue);
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
+                DimStyleTable dst =
 
+                  (DimStyleTable)tr.GetObject(
+
+                    doc.Database.DimStyleTableId, OpenMode.ForWrite
+
+                  );
+
+
+
+                
+
+                try
+                {
+                    DimStyleTableRecord dstr = new DimStyleTableRecord();
+                    dstr.Dimtxt = 200;
+                    dstr.Name = "DeeStyle";
+                    this.dimStyle = dst.Add(dstr);
+                    tr.AddNewlyCreatedDBObject(dstr, true);
+                }
+                catch { }
                 Application.SetSystemVariable("DIMEXO", newExtendValue);
                 Application.SetSystemVariable("DIMTFAC", newExtendValue);
                 DimStyleTableRecord dimStyle = new DimStyleTableRecord();
