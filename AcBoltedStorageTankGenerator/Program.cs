@@ -1,6 +1,5 @@
 ﻿using AcBoltedStorageTankGenerator.Models;
 using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
@@ -14,7 +13,7 @@ namespace AcBoltedStorageTankGenerator
     public class Program : IExtensionApplication
     {
         ObjectId dimStyle = new ObjectId();
-        readonly string dwgFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Panels.dwg");
+        readonly string dwgFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Acc_Parts.dwg");
         private void ImportBlocks()
         {
             DocumentCollection dm = Application.DocumentManager;
@@ -252,7 +251,6 @@ namespace AcBoltedStorageTankGenerator
 
                 if (view.StartsWith("A") || view.StartsWith("B"))
                 {
-                    
 
                     using (var dim = new AlignedDimension(insertionPoint + new Vector3d(0.0, storageTank.Height, 0.0), insertionPoint + new Vector3d(0.0, 0, 0.0), insertionPoint + new Vector3d(-1000, 0.0, 0.0), string.Empty, dimStyle))
                     {
@@ -271,16 +269,17 @@ namespace AcBoltedStorageTankGenerator
                         tr.AddNewlyCreatedDBObject(dim, true);
                     }
 
-                    DBText text = new DBText
-                    {
-                        Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
-                        Height = 180,
-                        TextString = view
-                    };
-
-                    currentSpace.AppendEntity(text);
-                    tr.AddNewlyCreatedDBObject(text, true);
                 }
+
+                DBText text = new DBText
+                {
+                    Position = new Point3d(insertionPoint.X, insertionPoint.Y - 610, insertionPoint.Z),
+                    Height = 180,
+                    TextString = view
+                };
+
+                currentSpace.AppendEntity(text);
+                tr.AddNewlyCreatedDBObject(text, true);
                 // Commit the transaction to save the changes
                 tr.Commit();
 
@@ -436,7 +435,7 @@ namespace AcBoltedStorageTankGenerator
                 }
                 else
                 {
-                    text.Position = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1056.5796 / 2) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - (((storageTank.Width / 2) / 1220) * 609.9504) - text.GeometricExtents.MaxPoint.Y - 400, insertionPoint.Z);
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - (((storageTank.Width / 2) / 1220) * 609.9504) - text.GeometricExtents.MaxPoint.Y - 400, insertionPoint.Z);
                 }
                 currentSpace.AppendEntity(text);
                 tr.AddNewlyCreatedDBObject(text, true);
@@ -813,45 +812,46 @@ namespace AcBoltedStorageTankGenerator
 
         public void Initialize()
         {
-            Document doc = Application.DocumentManager.MdiActiveDocument;
-            double newExtendValue = 120;
-
-            byte red = 242;
-            byte green = 113;
-            byte blue = 114;
-
-            Color newColor = Color.FromRgb(red, green, blue);
-            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            if (File.Exists(dwgFilePath))
             {
-                DimStyleTable dst =
-
-                  (DimStyleTable)tr.GetObject(
-
-                    doc.Database.DimStyleTableId, OpenMode.ForWrite
-
-                  );
-
-
-
-                
-
-                try
+                Document currentDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+                Database currentDb = currentDoc.Database;
+                Database sourceDb = new Database(false, true);
+                using (sourceDb)
                 {
-                    DimStyleTableRecord dstr = new DimStyleTableRecord();
-                    dstr.Dimtxt = 200;
-                    dstr.Name = "DeeStyle";
-                    this.dimStyle = dst.Add(dstr);
-                    tr.AddNewlyCreatedDBObject(dstr, true);
-                }
-                catch { }
-                Application.SetSystemVariable("DIMEXO", newExtendValue);
-                Application.SetSystemVariable("DIMTFAC", newExtendValue);
-                DimStyleTableRecord dimStyle = new DimStyleTableRecord();
-                dimStyle = tr.GetObject(doc.Database.Dimstyle, OpenMode.ForWrite) as DimStyleTableRecord;
-                dimStyle.Dimclrd = newColor;
+                    string fileExtension = System.IO.Path.GetExtension(dwgFilePath);
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(dwgFilePath);  //use fileName as blockName.
+                    sourceDb.ReadDwgFile(dwgFilePath, FileOpenMode.OpenForReadAndReadShare, false, null);
 
-                tr.Commit();
+
+                    ObjectIdCollection idsForInsert = new ObjectIdCollection();
+                    using (Transaction acTrans = currentDb.TransactionManager.StartTransaction())
+                    {
+                        DimStyleTable acDimTable = acTrans.GetObject(currentDb.DimStyleTableId, OpenMode.ForWrite) as DimStyleTable;
+                        using (Transaction scTrans = sourceDb.TransactionManager.StartTransaction())
+                        {
+                            DimStyleTable scDimStyleTable = scTrans.GetObject(sourceDb.DimStyleTableId, OpenMode.ForRead) as DimStyleTable;
+
+                            foreach (ObjectId id in scDimStyleTable)
+                            {
+                                DimStyleTableRecord scStyleRecord = (DimStyleTableRecord)scTrans.GetObject(id, OpenMode.ForRead);
+                                if (scStyleRecord != null && acDimTable.Has(scStyleRecord.Name) == false)
+                                {
+                                    idsForInsert.Add(id);
+                                }  
+                            }
+                        }
+                        if (idsForInsert.Count != 0)
+                        {
+                            IdMapping iMap = new IdMapping();
+                            currentDb.WblockCloneObjects(idsForInsert, currentDb.DimStyleTableId, iMap, DuplicateRecordCloning.Ignore, false);
+                        }
+
+                        acTrans.Commit();
+                    }
+                }
             }
+
 
             ImportBlocks();
         }
