@@ -428,14 +428,13 @@ namespace AcBoltedStorageTankGenerator
                     Height = 180,
                     TextString = view
                 };
-                //B Is Front
                 if (isFront)
                 {
-                    text.Position = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1056.5796) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y + storageTank.Length / 1220 * 609.9504 / 2, insertionPoint.Z);
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796) / 2 + (text.GeometricExtents.MaxPoint.X / 2), insertionPoint.Y + (storageTank.Length / 2 / 1220 * 609.9504) - text.GeometricExtents.MaxPoint.Y - 400, insertionPoint.Z);
                 }
                 else
                 {
-                    text.Position = new Point3d(insertionPoint.X + (storageTank.Length / 1220 * 1056.5796) - text.GeometricExtents.MaxPoint.X / 2, insertionPoint.Y - (((storageTank.Width / 2) / 1220) * 609.9504) - text.GeometricExtents.MaxPoint.Y - 400, insertionPoint.Z);
+                    text.Position = new Point3d(insertionPoint.X + (storageTank.Width / 1220 * 1056.5796) / 2 - (text.GeometricExtents.MaxPoint.X / 2), insertionPoint.Y - (storageTank.Width / 2 / 1220 * 609.9504) - (text.GeometricExtents.MaxPoint.Y) - 400, insertionPoint.Z);
                 }
                 currentSpace.AppendEntity(text);
                 tr.AddNewlyCreatedDBObject(text, true);
@@ -838,7 +837,7 @@ namespace AcBoltedStorageTankGenerator
                                 if (scStyleRecord != null && acDimTable.Has(scStyleRecord.Name) == false)
                                 {
                                     idsForInsert.Add(id);
-                                }  
+                                }
                             }
                         }
                         if (idsForInsert.Count != 0)
